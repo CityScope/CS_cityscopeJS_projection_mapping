@@ -10,7 +10,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-map-gl": "7.0.19",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "react-use-websocket": "^4.8.1",
     "typescript": "^4.8.4"
   },
