@@ -9,12 +9,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      REACT_APP_MAPBOX_TOKEN: ${{ secrets.REACT_APP_MAPBOX_TOKEN }}
     strategy:
       matrix:
         node-version: [18.x]
     steps:
+      - name: create env file
+        run: |
+          touch .env
+          echo REACT_APP_MAPBOX_TOKEN=${{ secrets.REACT_APP_MAPBOX_TOKEN }} >> .env
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
