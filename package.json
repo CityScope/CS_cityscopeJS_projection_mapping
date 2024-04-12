@@ -1,4 +1,5 @@
 {
+  "homepage": "https://cityscope.media.mit.edu/CS_cityscopeJS_projection_mapping",
   "dependencies": {
     "@loaders.gl/obj": "^3.2.9",
     "axios": "^1.1.2",
