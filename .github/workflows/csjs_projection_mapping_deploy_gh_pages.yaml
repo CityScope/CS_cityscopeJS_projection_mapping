@@ -9,6 +9,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      REACT_APP_MAPBOX_TOKEN: ${{ secrets.REACT_APP_MAPBOX_TOKEN }}
     strategy:
       matrix:
         node-version: [18.x]
@@ -20,11 +22,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install Packages
         run: npm install
-      - name: "Create env file for REACT_APP_MAPBOX_TOKEN"
-        run: |
-          touch .env
-          echo REACT_APP_MAPBOX_TOKEN=${{ secrets.REACT_APP_MAPBOX_TOKEN }} >> .env
-          cat .env
       - name: Build page
         run: npm run build
       - name: Deploy to gh-pages
