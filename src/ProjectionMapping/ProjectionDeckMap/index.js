@@ -10,23 +10,29 @@ Logic to parse through the layers:
 */
 
 import { mapSettings as settings } from "../../settings/settings";
-import { SimpleMeshLayer, BitmapLayer } from "deck.gl";
-import { OBJLoader } from "@loaders.gl/obj";
 import { CubeGeometry } from "@luma.gl/engine";
 import DeckMap from "./BaseMap";
-import { TileLayer } from "@deck.gl/geo-layers";
+import {
+  createHeatmapLayer,
+  createMeshLayer,
+  createTileLayer,
+  createArcLayer,
+} from "./layers";
+import { OBJLoader } from "@loaders.gl/obj";
 
 export default function ProjectionDeckMap(props) {
   // get the cityIOdata from the props
   const cityIOdata = props.cityIOdata;
-  // create a new cube geometry
+
   const cube = new CubeGeometry({ type: "x,z", xlen: 0, ylen: 0, zlen: 0 });
+
   // get the viewStateEditMode from the props
   const viewStateEditMode = props.viewStateEditMode;
   const layersVisibilityControl = props.layersVisibilityControl;
 
   // get the GEOGRID object from the cityIOdata
   const GEOGRID = cityIOdata.GEOGRID;
+
   /*
   replace every GEOGRID.features[x].properties
   with cityIOdata.GEOGRIDDATA[x] to update the
@@ -48,60 +54,27 @@ export default function ProjectionDeckMap(props) {
   const mapStyle = styles.Light;
 
   const layersArray = () => {
-    return [
-      new TileLayer({
-        data:
-          mapStyle &&
-          `https://api.mapbox.com/styles/v1/relnox/${mapStyle}/tiles/256/{z}/{x}/{y}?access_token=` +
-            process.env.REACT_APP_MAPBOX_TOKEN +
-            "&attribution=false&logo=false&fresh=true",
-        minZoom: 0,
-        maxZoom: 21,
-        tileSize: 256,
+    const baseLayers = [];
+    baseLayers.push(
+      createTileLayer(mapStyle),
+      createMeshLayer(GEOGRID, cube, header, OBJLoader)
+    );
 
-        renderSubLayers: (props) => {
-          const {
-            bbox: { west, south, east, north },
-          } = props.tile;
+    if (cityIOdata.LAYERS) {
+      for (let i = 0; i < cityIOdata.LAYERS.length; i++) {
+        const layer = cityIOdata.LAYERS[i];
+        const layerType = layer.type;
 
-          return new BitmapLayer(props, {
-            data: null,
-            image: props.data,
-            bounds: [west, south, east, north],
-          });
-        },
-      }),
+        if (layerType === "heatmap") {
+          baseLayers.push(createHeatmapLayer(i, layer, GEOGRID));
+        } else if (layerType === "arc") {
+          baseLayers.push(createArcLayer(i, layer, GEOGRID));
+        }
+      }
+    }
 
-      new SimpleMeshLayer({
-        id: "mesh-layer",
-        data: GEOGRID.features,
-        loaders: [OBJLoader],
-        mesh: cube,
-        getPosition: (d) => {
-          const pntArr = d.geometry.coordinates[0];
-          const first = pntArr[1];
-          const last = pntArr[pntArr.length - 2];
-          const center = [
-            (first[0] + last[0]) / 2,
-            (first[1] + last[1]) / 2,
-            1,
-          ];
-          return center;
-        },
-        getColor: (d) => d.properties.color,
-        opacity: 1,
-        getOrientation: (d) => [-180, header.rotation, -90],
-        getScale: (d) => [
-          GEOGRID.properties.header.cellSize / 2.1,
-          1,
-          GEOGRID.properties.header.cellSize / 2.1,
-        ],
 
-        updateTriggers: {
-          getScale: GEOGRID,
-        },
-      }),
-    ];
+    return baseLayers;
   };
 
   return (

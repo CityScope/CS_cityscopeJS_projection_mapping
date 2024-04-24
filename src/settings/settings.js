@@ -10,3 +10,8 @@ export const mapSettings = {
     },
   },
 };
+
+export const getCityIOUrl = {
+  current: "wss://cityio.media.mit.edu/cityio/interface",
+  test: "wss://cityio-old.media.mit.edu/cityio/interface",
+};

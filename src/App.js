@@ -13,7 +13,6 @@ const App = () => {
   useEffect(() => {
     const location = window.location;
     const parsed = queryString.parse(location.search);
-    console.log(parsed);
     if (parsed.cityscope) {
       setTableName(parsed.cityscope);
     } else {
