@@ -6,7 +6,24 @@ import "mapbox-gl/dist/mapbox-gl.css";
 export default function BaseMap(props) {
   const header = props.header;
   const viewStateEditMode = props.viewStateEditMode;
-  const layers = props.layers;
+  const layersObject = props.layers;
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      // if the key pressed is enter
+      if (e.key === "Enter") {
+        //  ! TO SOLVE: this is a temporary solution to update the layers
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Don't forget to clean up
+    return function cleanup() {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [viewState, setViewState] = useState(() => {
     // on init, check if prev. local storage with
@@ -51,7 +68,7 @@ export default function BaseMap(props) {
         controller={true}
         viewState={viewState}
         onViewStateChange={onViewStateChange}
-        layers={layers}
+        layers={layersObject.baseLayers.concat(layersObject.layers)}
       />
       {viewState && viewStateEditMode && (
         <ViewStateInputs setViewState={setViewState} viewState={viewState} />

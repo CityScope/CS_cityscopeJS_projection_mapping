@@ -12,17 +12,19 @@ export const createHeatmapLayer = (i, layer, GEOGRID) =>
     getPosition: (d) => [d.coordinates[0], d.coordinates[1], 100],
     getWeight: (d) => d.weight,
     radiusPixels: 100,
-    intensity: 0.8,
-    threshold: 0.5,
+    intensity: 1,
+    opacity: 0.5,
+    threshold: 1,
     colorRange: [
-      [0, 0, 0, 0],
-      [255, 0, 0, 255],
-      [255, 255, 0, 255],
       [0, 255, 0, 255],
+      [255, 255, 0, 255],
+      [255, 0, 0, 255],
+      [0, 0, 0, 0],
     ],
     updateTriggers: {
       getWeight: GEOGRID,
     },
+    depthMask: false,
   });
 
 export const createGeoJsonLayer = (i, layer, GEOGRID) =>
@@ -74,8 +76,12 @@ export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
     id: "mesh-layer",
     data: GEOGRID.features,
     loaders: [OBJLoader],
-    opacity: 0.8,
+    opacity: 0.9,
     mesh: cube,
+
+    parameters: {
+      depthMask: false,
+    },
     getPosition: (d) => {
       const pntArr = d.geometry.coordinates[0];
       const first = pntArr[1];
@@ -86,9 +92,9 @@ export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
     getColor: (d) => d.properties.color,
     getOrientation: (d) => [-180, header.rotation, -90],
     getScale: (d) => [
-      GEOGRID.properties.header.cellSize / 2.5,
+      GEOGRID.properties.header.cellSize / 2.1,
       1,
-      GEOGRID.properties.header.cellSize / 2.5,
+      GEOGRID.properties.header.cellSize / 2.1,
     ],
     updateTriggers: {
       getScale: GEOGRID,

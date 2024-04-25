@@ -60,7 +60,6 @@ export default function ProjectionMapping(props) {
           LAYERS: lastJsonMessage.content?.moduleData?.deckgl,
         };
       });
-
       // if the lastJsonMessage is of type "ERROR", log it
     } else if (lastJsonMessage && lastJsonMessage.type === "ERROR") {
       console.error("Error from CityIO", lastJsonMessage);

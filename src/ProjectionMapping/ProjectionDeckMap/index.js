@@ -28,7 +28,6 @@ export default function ProjectionDeckMap(props) {
 
   // get the viewStateEditMode from the props
   const viewStateEditMode = props.viewStateEditMode;
-  const layersVisibilityControl = props.layersVisibilityControl;
 
   // get the GEOGRID object from the cityIOdata
   const GEOGRID = cityIOdata.GEOGRID;
@@ -53,35 +52,39 @@ export default function ProjectionDeckMap(props) {
   // ! TO DO: change the mapStyle to the desired style via the settings
   const mapStyle = styles.Light;
 
-  const layersArray = () => {
-    const baseLayers = [];
-    baseLayers.push(
+  const baseLayers = () => {
+    return [
       createTileLayer(mapStyle),
-      createMeshLayer(GEOGRID, cube, header, OBJLoader)
-    );
+      createMeshLayer(GEOGRID, cube, header, OBJLoader),
+    ];
+  };
 
-    if (cityIOdata.LAYERS) {
-      for (let i = 0; i < cityIOdata.LAYERS.length; i++) {
-        const layer = cityIOdata.LAYERS[i];
-        const layerType = layer.type;
+  const layersArray = () => {
+    const deckglLayers = [];
 
-        if (layerType === "heatmap") {
-          baseLayers.push(createHeatmapLayer(i, layer, GEOGRID));
-        } else if (layerType === "arc") {
-          baseLayers.push(createArcLayer(i, layer, GEOGRID));
-        }
+    // layersData is either cityIOdata.LAYERS if exist or cityIOdata.deckgl if not
+    const layersData = cityIOdata.LAYERS || cityIOdata.deckgl;
+
+    for (let i = 0; i < layersData.length; i++) {
+      const layer = layersData[i];
+      const layerType = layer.type;
+      // const layerId = layer.id;
+
+      if (layerType === "heatmap") {
+        deckglLayers.push(createHeatmapLayer(i, layer, GEOGRID));
+      } else if (layerType === "arc") {
+        deckglLayers.push(createArcLayer(i, layer, GEOGRID));
       }
     }
 
-
-    return baseLayers;
+    return deckglLayers;
   };
 
   return (
     <DeckMap
       header={cityIOdata.GEOGRID.properties.header}
       viewStateEditMode={viewStateEditMode}
-      layers={layersArray(layersVisibilityControl)}
+      layers={{ baseLayers: baseLayers(), layers: layersArray() }}
     />
   );
 }
