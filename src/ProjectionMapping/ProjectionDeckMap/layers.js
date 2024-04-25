@@ -12,9 +12,9 @@ export const createHeatmapLayer = (i, layer, GEOGRID) =>
     getPosition: (d) => [d.coordinates[0], d.coordinates[1], 100],
     getWeight: (d) => d.weight,
     radiusPixels: 100,
-    intensity: 1,
-    opacity: 0.5,
-    threshold: 1,
+    intensity: 0.5,
+    opacity: 0.85,
+    threshold: 0.5,
     colorRange: [
       [0, 255, 0, 255],
       [255, 255, 0, 255],
@@ -24,7 +24,6 @@ export const createHeatmapLayer = (i, layer, GEOGRID) =>
     updateTriggers: {
       getWeight: GEOGRID,
     },
-    depthMask: false,
   });
 
 export const createGeoJsonLayer = (i, layer, GEOGRID) =>
@@ -42,6 +41,7 @@ export const createGeoJsonLayer = (i, layer, GEOGRID) =>
     getRadius: 100,
     getLineWidth: 1,
     getElevation: 30,
+
     updateTriggers: {
       getFillColor: GEOGRID,
     },
@@ -49,6 +49,7 @@ export const createGeoJsonLayer = (i, layer, GEOGRID) =>
 
 export const createTileLayer = (mapStyle) =>
   new TileLayer({
+    id: "sat-view-layer",
     data:
       mapStyle &&
       `https://api.mapbox.com/styles/v1/relnox/${mapStyle}/tiles/256/{z}/{x}/{y}?access_token=` +
@@ -73,7 +74,7 @@ export const createTileLayer = (mapStyle) =>
 
 export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
   return new SimpleMeshLayer({
-    id: "mesh-layer",
+    id: "grid-layer",
     data: GEOGRID.features,
     loaders: [OBJLoader],
     opacity: 0.9,
@@ -106,6 +107,7 @@ export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
 export const createArcLayer = (i, layer, GEOGRID) =>
   new ArcLayer({
     id: `arc-layer-${i}`,
+
     data: layer.data,
     getSourcePosition: (d) => d.from.coordinates,
     getTargetPosition: (d) => d.to.coordinates,
