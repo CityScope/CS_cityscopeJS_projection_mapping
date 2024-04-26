@@ -134,8 +134,11 @@ export const createMeshLayer = (cityIOdata, GEOGRID, OBJLoader) => {
       ];
       return center;
     },
-    getText: (d) => d.properties.name || d.properties.id || null,
-    getSize: 5,
+    getText: (d) =>
+      // get the first 2 characters of the d.properties.name || d.properties.id || null,
+      d.properties.name?.slice(0, 2) || d.properties.id?.slice(0, 2) || null,
+
+    getSize: 10,
     getColor: (d) =>
       // inverse the rgb color to make text more readable
       d.properties.color.map((c) => 255 - c),
