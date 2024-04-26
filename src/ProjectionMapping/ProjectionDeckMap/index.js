@@ -45,7 +45,7 @@ export default function ProjectionDeckMap(props) {
     function handleClick(event) {
       if (event.key === "Enter") {
         // increment the indexRef if small than the length of the layers in cityIOdata.deckgl
-        if (indexRef.current < layersData.length) {
+        if (indexRef.current < layersData.length - 1) {
           indexRef.current++;
         } else {
           // reset the indexRef to 0 if it is equal to the length of the layers in cityIOdata.deckgl
@@ -68,41 +68,32 @@ export default function ProjectionDeckMap(props) {
   }, [cityIOdata]);
 
   const createLayersArray = () => {
-    /*
-  replace every GEOGRID.features[x].properties
-  with cityIOdata.GEOGRIDDATA[x] to update the
-  properties of each grid cell
-  */
-    for (let i = 0; i < GEOGRID.features?.length; i++) {
-      // update GEOGRID features from GEOGRIDDATA on cityio
-      GEOGRID.features[i].properties = cityIOdata.GEOGRIDDATA[i];
-      // inject id with ES7 copy of the object
-      GEOGRID.features[i].properties = {
-        ...GEOGRID.features[i].properties,
-        id: i,
-      };
-    }
-
-    const header = GEOGRID.properties.header;
     const styles = settings.map.mapStyles;
     const mapStyle = styles.Light;
-    // create an array to store the layers
+
     const l = [];
-    // add the mesh layer to the layers array
-    l.push(createMeshLayer(GEOGRID, cube, header, OBJLoader));
+    l.push(
+      // add the tile layer to the layers array
+      createTileLayer(mapStyle),
+      createMeshLayer(
+        cityIOdata,
+        GEOGRID,
+        cube,
+        GEOGRID.properties.header,
+        OBJLoader
+      )
+    );
 
-    for (let i = 0; i < layersData.length; i++) {
-      const layer = layersData[i];
-      const layerType = layer.type;
-      // const layerId = layer.id;
+    const layer = layersData[indexRef.current];
+    const layerType = layer.type;
 
-      if (layerType === "heatmap") {
-        l.push(createHeatmapLayer(i, layer, GEOGRID));
-      } else if (layerType === "arc") {
-        l.push(createArcLayer(i, layer, GEOGRID));
-      }
+    if (layerType === "heatmap") {
+      l.push(createHeatmapLayer(indexRef.current, layer, GEOGRID));
+    } else if (layerType === "arc") {
+      l.push(createArcLayer(indexRef.current, layer, GEOGRID));
     }
-    setLayersToRender([createTileLayer(mapStyle), l[indexRef.current]]);
+
+    setLayersToRender(l);
   };
 
   return (

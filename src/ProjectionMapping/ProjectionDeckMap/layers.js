@@ -72,17 +72,38 @@ export const createTileLayer = (mapStyle) =>
     },
   });
 
-export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
+export const createMeshLayer = (
+  cityIOdata,
+  GEOGRID,
+  cube,
+  header,
+  OBJLoader
+) => {
+  /*
+  replace every GEOGRID.features[x].properties
+  with cityIOdata.GEOGRIDDATA[x] to update the
+  properties of each grid cell
+  */
+  for (let i = 0; i < GEOGRID.features?.length; i++) {
+    // update GEOGRID features from GEOGRIDDATA on cityio
+    GEOGRID.features[i].properties = cityIOdata.GEOGRIDDATA[i];
+    // inject id with ES7 copy of the object
+    GEOGRID.features[i].properties = {
+      ...GEOGRID.features[i].properties,
+      id: i,
+    };
+  }
+
   return new SimpleMeshLayer({
     id: "grid-layer",
     data: GEOGRID.features,
     loaders: [OBJLoader],
-    opacity: 0.9,
+    opacity: 1,
     mesh: cube,
 
-    // parameters: {
-    //   depthMask: false,
-    // },
+    parameters: {
+      depthMask: false,
+    },
     getPosition: (d) => {
       const pntArr = d.geometry.coordinates[0];
       const first = pntArr[1];
