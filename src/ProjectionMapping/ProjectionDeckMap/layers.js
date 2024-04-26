@@ -80,9 +80,9 @@ export const createMeshLayer = (GEOGRID, cube, header, OBJLoader) => {
     opacity: 0.9,
     mesh: cube,
 
-    parameters: {
-      depthMask: false,
-    },
+    // parameters: {
+    //   depthMask: false,
+    // },
     getPosition: (d) => {
       const pntArr = d.geometry.coordinates[0];
       const first = pntArr[1];

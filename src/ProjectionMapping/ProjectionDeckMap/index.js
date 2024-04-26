@@ -61,6 +61,12 @@ export default function ProjectionDeckMap(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // use effect to create the layers array every time the cityIOdata changes
+  useEffect(() => {
+    createLayersArray();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityIOdata]);
+
   const createLayersArray = () => {
     /*
   replace every GEOGRID.features[x].properties
