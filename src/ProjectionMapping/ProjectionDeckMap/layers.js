@@ -4,6 +4,8 @@ import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer } from "deck.gl";
 import { ArcLayer } from "@deck.gl/layers";
+import { CubeGeometry } from "@luma.gl/core";
+import { TextLayer } from "@deck.gl/layers";
 
 export const createHeatmapLayer = (i, layer, GEOGRID) =>
   new HeatmapLayer({
@@ -72,13 +74,10 @@ export const createTileLayer = (mapStyle) =>
     },
   });
 
-export const createMeshLayer = (
-  cityIOdata,
-  GEOGRID,
-  cube,
-  header,
-  OBJLoader
-) => {
+export const createMeshLayer = (cityIOdata, GEOGRID, OBJLoader) => {
+  const cube = new CubeGeometry({ type: "x,z", xlen: 0, ylen: 0, zlen: 0 });
+
+  const header = GEOGRID.properties.header;
   /*
   replace every GEOGRID.features[x].properties
   with cityIOdata.GEOGRIDDATA[x] to update the
@@ -94,34 +93,55 @@ export const createMeshLayer = (
     };
   }
 
-  return new SimpleMeshLayer({
+  const meshLayer = new SimpleMeshLayer({
     id: "grid-layer",
     data: GEOGRID.features,
     loaders: [OBJLoader],
-    opacity: 1,
+    opacity: 0.85,
     mesh: cube,
-
-    parameters: {
-      depthMask: false,
-    },
     getPosition: (d) => {
       const pntArr = d.geometry.coordinates[0];
       const first = pntArr[1];
       const last = pntArr[pntArr.length - 2];
-      const center = [(first[0] + last[0]) / 2, (first[1] + last[1]) / 2, 1];
+      const center = [(first[0] + last[0]) / 2, (first[1] + last[1]) / 2, -1];
       return center;
     },
     getColor: (d) => d.properties.color,
     getOrientation: (d) => [-180, header.rotation, -90],
     getScale: (d) => [
-      GEOGRID.properties.header.cellSize / 2.1,
+      GEOGRID.properties.header.cellSize / 2.5,
       1,
-      GEOGRID.properties.header.cellSize / 2.1,
+      GEOGRID.properties.header.cellSize / 2.5,
     ],
     updateTriggers: {
       getScale: GEOGRID,
     },
   });
+
+  const textLayer = new TextLayer({
+    id: "text-layer",
+    data: GEOGRID.features,
+    getPosition: (d) => {
+      const pntArr = d.geometry.coordinates[0];
+      const first = pntArr[1];
+      const last = pntArr[pntArr.length - 2];
+      const center = [
+        // center of the grid cell
+        (first[0] + last[0]) / 2,
+        (first[1] + last[1]) / 2,
+        // make text slightly above the mesh
+        d.properties.height + 1,
+      ];
+      return center;
+    },
+    getText: (d) => d.properties.name || d.properties.id || null,
+    getSize: 5,
+    getColor: (d) =>
+      // inverse the rgb color to make text more readable
+      d.properties.color.map((c) => 255 - c),
+  });
+
+  return [meshLayer, textLayer];
 };
 
 // arc layer

@@ -10,13 +10,13 @@ Logic to parse through the layers:
 */
 
 import { mapSettings as settings } from "../../settings/settings";
-import { CubeGeometry } from "@luma.gl/engine";
 import DeckMap from "./BaseMap";
 import {
   createHeatmapLayer,
   createMeshLayer,
   createTileLayer,
   createArcLayer,
+  createGeoJsonLayer
 } from "./layers";
 import { useRef, useState, useEffect } from "react";
 import { OBJLoader } from "@loaders.gl/obj";
@@ -26,11 +26,10 @@ export default function ProjectionDeckMap(props) {
   const indexRef = useRef(0);
 
   const [layersToRender, setLayersToRender] = useState([]);
+  const [layerInfo, setLayerInfo] = useState(null);
 
   // get the cityIOdata from the props
   const cityIOdata = props.cityIOdata;
-
-  const cube = new CubeGeometry({ type: "x,z", xlen: 0, ylen: 0, zlen: 0 });
 
   // get the viewStateEditMode from the props
   const viewStateEditMode = props.viewStateEditMode;
@@ -45,13 +44,12 @@ export default function ProjectionDeckMap(props) {
     function handleClick(event) {
       if (event.key === "Enter") {
         // increment the indexRef if small than the length of the layers in cityIOdata.deckgl
-        if (indexRef.current < layersData.length - 1) {
+        if (layersData && indexRef.current < layersData.length - 1) {
           indexRef.current++;
         } else {
           // reset the indexRef to 0 if it is equal to the length of the layers in cityIOdata.deckgl
           indexRef.current = 0;
         }
-
         createLayersArray();
       }
     }
@@ -75,32 +73,57 @@ export default function ProjectionDeckMap(props) {
     l.push(
       // add the tile layer to the layers array
       createTileLayer(mapStyle),
-      createMeshLayer(
-        cityIOdata,
-        GEOGRID,
-        cube,
-        GEOGRID.properties.header,
-        OBJLoader
-      )
+      createMeshLayer(cityIOdata, GEOGRID, OBJLoader)
     );
 
-    const layer = layersData[indexRef.current];
-    const layerType = layer.type;
-
-    if (layerType === "heatmap") {
-      l.push(createHeatmapLayer(indexRef.current, layer, GEOGRID));
-    } else if (layerType === "arc") {
-      l.push(createArcLayer(indexRef.current, layer, GEOGRID));
+    if (layersData && layersData.length > 0) {
+      const layer = layersData[indexRef.current];
+      setLayerInfo(layer.id);
+      const layerType = layer.type;
+      // set the layer type to the layer type from the layersData
+      if (layerType === "heatmap") {
+        l.push(createHeatmapLayer(indexRef.current, layer, GEOGRID));
+      } else if (layerType === "arc") {
+        l.push(createArcLayer(indexRef.current, layer, GEOGRID));
+      } 
+      else if (layerType === "geojson") {
+        l.push(createGeoJsonLayer(indexRef.current, layer, GEOGRID));
+      }
+      else {
+        console.error("Layer type not supported");
+        setLayerInfo("Layer type not yet supported");
+      }
     }
-
     setLayersToRender(l);
   };
 
   return (
-    <DeckMap
-      header={cityIOdata.GEOGRID.properties.header}
-      viewStateEditMode={viewStateEditMode}
-      layersArray={layersToRender}
-    />
+    <>
+      {layerInfo && (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 1,
+            bottom: 0,
+            paddingLeft: 10,
+            paddingRight: 10,
+            margin: 10,
+            color: "white",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            // rounded corners
+            borderRadius: 5,
+            fontFamily: "sans-serif, helvetica, arial",
+          }}
+        >
+          <h3>{layerInfo} </h3>
+        </div>
+      )}
+
+      <DeckMap
+        header={cityIOdata.GEOGRID.properties.header}
+        viewStateEditMode={viewStateEditMode}
+        layersArray={layersToRender}
+      />
+    </>
   );
 }
