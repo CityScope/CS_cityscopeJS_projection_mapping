@@ -29,7 +29,7 @@ export default function ProjectionMapping(props) {
 
   // when lastJsonMessage updates, print it to the console
   useEffect(() => {
-    if (lastJsonMessage && lastJsonMessage.type === "GRID") {
+    if (lastJsonMessage && lastJsonMessage.type === "TABLE_SNAPSHOT") {
       console.log("Socket open with", tableName, lastJsonMessage);
       const cityIOdata = lastJsonMessage.content;
       setCityIOData(cityIOdata);
