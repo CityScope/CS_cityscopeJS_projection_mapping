@@ -6,7 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 export default function BaseMap(props) {
   const header = props.header;
   const viewStateEditMode = props.viewStateEditMode;
-  const layers = props.layers;
+  const layersArray = props.layersArray;
 
   const [viewState, setViewState] = useState(() => {
     // on init, check if prev. local storage with
@@ -51,7 +51,7 @@ export default function BaseMap(props) {
         controller={true}
         viewState={viewState}
         onViewStateChange={onViewStateChange}
-        layers={layers}
+        layers={layersArray}
       />
       {viewState && viewStateEditMode && (
         <ViewStateInputs setViewState={setViewState} viewState={viewState} />

@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import ProjectionDeckMap from "./ProjectionDeckMap";
 import Keystoner from "./Components/Keystoner";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+import { getCityIOUrl } from "../settings/settings";
 
 export default function ProjectionMapping(props) {
-  const [cityIOData, setCityIOData] = useState();
   const tableName = props.tableName;
+  // state to store the cityIO data
+  const [cityIOData, setCityIOData] = useState();
 
   const { readyState, sendJsonMessage, lastJsonMessage } = useWebSocket(
-    "wss://cityio.media.mit.edu/cityio/interface",
+    //  get cityIO url from the settings
+    getCityIOUrl.test,
     {
       share: true,
       shouldReconnect: () => true,
@@ -48,7 +51,16 @@ export default function ProjectionMapping(props) {
           GEOGRIDDATA: lastJsonMessage.content,
         };
       });
-      console.log("GEOGRIDDATA UPDATE", lastJsonMessage);
+      // if the lastJsonMessage is of type "INDICATOR", log it
+    } else if (lastJsonMessage && lastJsonMessage.type === "INDICATOR") {
+      // setCityIOData so that the INDICATOR nested data is updated
+      setCityIOData((prev) => {
+        return {
+          ...prev,
+          LAYERS: lastJsonMessage.content?.moduleData?.deckgl,
+        };
+      });
+      // if the lastJsonMessage is of type "ERROR", log it
     } else if (lastJsonMessage && lastJsonMessage.type === "ERROR") {
       console.error("Error from CityIO", lastJsonMessage);
     }
