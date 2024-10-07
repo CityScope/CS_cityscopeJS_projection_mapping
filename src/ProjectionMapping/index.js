@@ -11,7 +11,7 @@ export default function ProjectionMapping(props) {
 
   const { readyState, sendJsonMessage, lastJsonMessage } = useWebSocket(
     //  get cityIO url from the settings
-    getCityIOUrl.test,
+    getCityIOUrl.current,
     {
       share: true,
       shouldReconnect: () => true,
@@ -52,12 +52,12 @@ export default function ProjectionMapping(props) {
         };
       });
       // if the lastJsonMessage is of type "INDICATOR", log it
-    } else if (lastJsonMessage && lastJsonMessage.type === "INDICATOR") {
+    } else if (lastJsonMessage && lastJsonMessage.type === "MODULE") {
       // setCityIOData so that the INDICATOR nested data is updated
       setCityIOData((prev) => {
         return {
           ...prev,
-          LAYERS: lastJsonMessage.content?.moduleData?.deckgl,
+          LAYERS: lastJsonMessage.content?.moduleData?.layers,
         };
       });
       // if the lastJsonMessage is of type "ERROR", log it
