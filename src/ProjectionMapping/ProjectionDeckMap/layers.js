@@ -38,8 +38,20 @@ export const createGeoJsonLayer = (i, layer, GEOGRID) =>
     extruded: true,
     lineWidthScale: 20,
     lineWidthMinPixels: 2,
-    getLineColor: [255, 255, 255],
-    getFillColor: [200, 200, 200],
+    getLineColor: f => {
+      const hex = f.properties.color;
+      if (!hex) return [0, 0, 0];
+    
+      const rgba = hex.match(/[0-9a-f]{2}/gi).map(x => parseInt(x, 16));
+      return rgba.length === 4 ? rgba : rgba.slice(0, 3);
+    },
+    getFillColor: f => {
+      const hex = f.properties.color;
+      if (!hex) return [0, 0, 0];
+    
+      const rgba = hex.match(/[0-9a-f]{2}/gi).map(x => parseInt(x, 16));
+      return rgba.length === 4 ? rgba : rgba.slice(0, 3);
+    },
     getRadius: 100,
     getLineWidth: 1,
     getElevation: 30,
@@ -49,14 +61,15 @@ export const createGeoJsonLayer = (i, layer, GEOGRID) =>
     },
   });
 
+const isFreeMapEnabled = new URLSearchParams(window.location.search).get("usefreemap") === "true";
 export const createTileLayer = (mapStyle) =>
   new TileLayer({
     id: "sat-view-layer",
     data:
-      mapStyle &&
-      `https://api.mapbox.com/styles/v1/relnox/${mapStyle}/tiles/256/{z}/{x}/{y}?access_token=` +
-        process.env.REACT_APP_MAPBOX_TOKEN +
-        "&attribution=false&logo=false&fresh=true",
+      isFreeMapEnabled
+      ? "https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}@2x.png"
+      : mapStyle &&
+        `https://api.mapbox.com/styles/v1/relnox/${mapStyle}/tiles/256/{z}/{x}/{y}?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}&attribution=false&logo=false&fresh=true`,
     minZoom: 0,
     maxZoom: 21,
     tileSize: 256,
