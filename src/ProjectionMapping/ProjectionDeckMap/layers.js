@@ -7,6 +7,16 @@ import { ArcLayer } from "@deck.gl/layers";
 import { CubeGeometry } from "@luma.gl/core";
 import { TextLayer } from "@deck.gl/layers";
 
+/**
+ * Converts a hex string to a RGB or RGBA array
+ * @param {string} hex - The 6 or 8 char hex to convert
+ * @returns {number[]} - Array of 3 RGB or 4 RGBA numbers
+ */
+function hex_to_rgba(hex) {
+  const rgba = hex.match(/[0-9a-f]{2}/gi).map(x => parseInt(x, 16));
+  return rgba.length === 4 ? rgba : rgba.slice(0, 3);
+}
+
 export const createHeatmapLayer = (i, layer, GEOGRID) =>
   new HeatmapLayer({
     id: `heatmap-layer-${i}`,
@@ -38,8 +48,18 @@ export const createGeoJsonLayer = (i, layer, GEOGRID) =>
     extruded: true,
     lineWidthScale: 20,
     lineWidthMinPixels: 2,
-    getLineColor: [255, 255, 255],
-    getFillColor: [200, 200, 200],
+    getLineColor: f => {
+      const hex = f.properties.lineColor ?? f.properties.color;
+      if (!hex) return [0, 0, 0];
+    
+      return hex_to_rgba(hex);
+    },
+    getFillColor: f => {
+      const hex = f.properties.fillColor ?? f.properties.color;
+      if (!hex) return [0, 0, 0];
+    
+      return hex_to_rgba(hex);
+    },
     getRadius: 100,
     getLineWidth: 1,
     getElevation: 30,
